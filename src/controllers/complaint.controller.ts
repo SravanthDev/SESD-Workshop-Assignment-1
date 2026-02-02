@@ -7,8 +7,26 @@ class ComplaintController {
     res.status(201).json(complaint);
   };
 
-  public getAllComplaints = async (_req: Request, res: Response) => {
-    const complaints = await ComplaintModel.find();
+  // FILTER + PAGINATION + SORTING
+  public getAllComplaints = async (req: Request, res: Response) => {
+    const { category, page = "1", limit = "10", sort = "desc" } = req.query;
+
+    const filter: any = {};
+    if (category) {
+      filter.category = category;
+    }
+
+    const pageNumber = parseInt(page as string, 10);
+    const limitNumber = parseInt(limit as string, 10);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const sortOrder = sort === "asc" ? 1 : -1;
+
+    const complaints = await ComplaintModel.find(filter)
+      .sort({ createdAt: sortOrder })
+      .skip(skip)
+      .limit(limitNumber);
+
     res.json(complaints);
   };
 
